@@ -27,17 +27,26 @@ export async function register(req: Request, res: Response) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
-    data: { name, email, username, phone, password: hashedPassword, role: role ?? "GUEST" },
-  });
+  try {
+    const user = await prisma.user.create({
+      data: { name, email, username, phone, password: hashedPassword, role: role ?? "GUEST" },
+    });
 
-  const { password: _, ...userWithoutPassword } = user;
-  await sendEmail(
-    email,
-    "Welcome to Airbnb!",
-    `<h1>Welcome, ${name}!</h1><p>Your account has been created successfully.</p>`
-  );
-  res.status(201).json(userWithoutPassword);
+    const { password: _, ...userWithoutPassword } = user;
+    try {
+      await sendEmail(
+        email,
+        "Welcome to Airbnb!",
+        `<h1>Welcome, ${name}!</h1><p>Your account has been created successfully.</p>`
+      );
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError);
+    }
+    return res.status(201).json(userWithoutPassword);
+  } catch (error) {
+    console.error("Register error:", error);
+    return res.status(500).json({ error: "Error creating user" });
+  }
 }
 
 export async function login(req: Request, res: Response) {

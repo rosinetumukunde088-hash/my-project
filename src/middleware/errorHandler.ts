@@ -10,11 +10,12 @@ export function errorHandler(
 ) {
   // Zod validation errors — return all field errors at once
   if (err instanceof ZodError) {
-    return res.status(400).json({ errors: err.errors });
+    return res.status(400).json({ errors: err.issues });
   }
 
   // Prisma known errors
   if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    console.error("Prisma error code:", err.code, "message:", err.message);
     switch (err.code) {
       case "P2002":
         return res.status(409).json({ error: `${err.meta?.target} already exists` });
