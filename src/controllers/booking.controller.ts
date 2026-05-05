@@ -23,7 +23,7 @@ export const getAllBookings = async (req: Request, res: Response) => {
 };
 
 export const getBookingById = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   const booking = await prisma.booking.findUnique({
     where: { id },
     include: { guest: true, listing: true },
@@ -33,7 +33,7 @@ export const getBookingById = async (req: Request, res: Response) => {
 };
 
 export const getUserBookings = async (req: Request, res: Response) => {
-  const guestId = parseInt(req.params["id"] as string);
+  const guestId = req.params["id"] as string;
   const page = parseInt(req.query["page"] as string) || 1;
   const limit = parseInt(req.query["limit"] as string) || 10;
   const skip = (page - 1) * limit;
@@ -88,7 +88,7 @@ export const createBooking = async (req: Request, res: Response) => {
 };
 
 export const deleteBooking = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   const existing = await prisma.booking.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: "Booking not found" });
 
@@ -97,7 +97,7 @@ export const deleteBooking = async (req: Request, res: Response) => {
 };
 
 export const updateBooking = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   const { checkIn, guestId, totalPrice, listingId, status } = req.body;
   const data: any = {};
   if (checkIn) {
