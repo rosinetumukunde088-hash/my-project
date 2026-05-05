@@ -56,9 +56,10 @@ export const getUserBookings = async (req: Request, res: Response) => {
 };
 
 export const createBooking = async (req: Request, res: Response) => {
-  const { checkIn, checkOut, guestId, listingId, guests } = req.body;
+  const { checkIn, checkOut, guestId, listingId } = req.body;
+  const guests = parseInt(req.body.guests);
 
-  if (!checkIn || !checkOut || !guestId || !listingId || !guests) {
+  if (!checkIn || !checkOut || !guestId || !listingId || isNaN(guests)) {
     return res.status(400).json({ message: "checkIn, checkOut, guestId, listingId and guests are required" });
   }
 
