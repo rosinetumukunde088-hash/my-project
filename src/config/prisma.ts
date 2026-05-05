@@ -1,6 +1,6 @@
 import pg from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated";
 
 const pool = new pg.Pool({
   connectionString: process.env["DATABASE_URL"],
