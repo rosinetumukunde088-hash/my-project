@@ -8,6 +8,7 @@
   },
   "scripts": {
     "postinstall": "prisma generate",
+    "build": "prisma migrate deploy",
     "start": "tsx src/index.ts",
     "dev": "nodemon --exec tsx src/index.ts"
   },
