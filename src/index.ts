@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cors from "cors";
 import compression from "compression";
 import listingsRouter from "./routes/listings.routes.js";
 import usersRouter from "./routes/users.routes.js";
@@ -15,6 +16,7 @@ import { generalLimiter } from "./middleware/rateLimiter.js";
 const app = express();
 const PORT = process.env["PORT"] || 5000;
 
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(compression());
 app.use(express.json());
 app.use(generalLimiter);
