@@ -56,30 +56,24 @@ export const createUser = async (req: Request, res: Response ) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-    const id = parseInt(req.params["id"] as string);
+    const id = req.params["id"] as string;
 
     const existing = await prisma.user.findUnique({ where: { id } });
 
     if (!existing) return res.status(404).json({ error: "User not found" });
 
-    const { name, email, username, phone, role } = req.body;
+    const { name, email, username, phone, bio, avatar } = req.body;
     try {
         const updatedUser = await prisma.user.update({
             where: { id },
-            data: {
-                name,
-                email,
-                username,
-                phone,
-                role
-            }
+            data: { name, email, username, phone, bio, avatar },
         });
-        res.status(200).json(updatedUser);
+        const { password: _, ...userWithoutPassword } = updatedUser;
+        res.status(200).json(userWithoutPassword);
     } catch (error) {
         console.log("Error updating user:", error);
         res.status(500).json({ message: "Error updating user" });
     }
-
 };
 
 export const deleteUser = async (req: Request, res: Response) => {

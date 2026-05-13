@@ -8,7 +8,7 @@ import prisma from "../config/prisma.js";
 // Then we upload the buffer to Cloudinary and save the URL to the database
 
 export async function uploadAvatar(req: Request, res: Response) {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
 
   // req.file is set by Multer — if it's missing, no file was sent
   if (!req.file) {
