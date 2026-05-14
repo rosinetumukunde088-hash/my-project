@@ -3,7 +3,7 @@ import prisma from "../config/prisma.js";
 import { getCache, setCache, clearCacheByPrefix } from "../config/cache.js";
 
 export const getReviews = async (req: Request, res: Response) => {
-  const listingId = parseInt(req.params["id"] as string);
+  const listingId = req.params["id"] as string;
   const page = parseInt(req.query["page"] as string) || 1;
   const limit = parseInt(req.query["limit"] as string) || 10;
   const skip = (page - 1) * limit;
@@ -32,7 +32,7 @@ export const getReviews = async (req: Request, res: Response) => {
 };
 
 export const createReview = async (req: Request, res: Response) => {
-  const listingId = parseInt(req.params["id"] as string);
+  const listingId = req.params["id"] as string;
   const { userId, rating, comment } = req.body;
 
   if (!userId || !rating || !comment) {
@@ -54,7 +54,7 @@ export const createReview = async (req: Request, res: Response) => {
 };
 
 export const deleteReview = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   const existing = await prisma.review.findUnique({ where: { id } });
   if (!existing) return res.status(404).json({ message: "Review not found" });
 

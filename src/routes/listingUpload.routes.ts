@@ -1,11 +1,10 @@
 import { Router } from "express";
 import upload from "../config/multer.js";
-import { uploadAvatar, uploadListingPhoto } from "../controllers/upload.controller.js";
+import { uploadListingPhoto } from "../controllers/upload.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.post("/:id/avatar", authenticate, upload.single("image"), uploadAvatar);
 router.post("/listing-photo", authenticate, upload.single("image"), uploadListingPhoto);
 
 export default router;

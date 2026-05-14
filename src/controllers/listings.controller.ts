@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import prisma from "../config/prisma.js";
 import { getCache, setCache, clearCache } from "../config/cache.js";
+import type { AuthRequest } from "../middleware/auth.middleware.js";
 
 export const getAllListings = async (req: Request, res: Response) => {
   const page = parseInt(req.query["page"] as string) || 1;
@@ -39,9 +40,7 @@ export const searchListings = async (req: Request, res: Response) => {
 
   const [listings, total] = await Promise.all([
     prisma.listing.findMany({
-      where,
-      skip,
-      take: limit,
+      where, skip, take: limit,
       include: { host: { select: { name: true, email: true } } },
       orderBy: { createdAt: "desc" },
     }),
@@ -52,56 +51,90 @@ export const searchListings = async (req: Request, res: Response) => {
 };
 
 export const getListingById = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  // id is a UUID string, not an integer
+  const id = req.params["id"] as string;
   try {
     const listing = await prisma.listing.findUnique({ where: { id } });
     if (!listing) return res.status(404).json({ message: "Listing not found" });
     res.json(listing);
   } catch (error) {
+    console.error("getListingById error:", error);
     res.status(500).json({ message: "Error fetching listing" });
   }
 };
 
-export const createListing = async (req: Request, res: Response) => {
-  const { title, location, pricePerNight, guest, type, amenities } = req.body;
+export const createListing = async (req: AuthRequest, res: Response) => {
+  const { title, location, pricePerNight, guest, type, amenities, description } = req.body;
+  const hostId = req.user?.id;
 
-  if (!title || !location || !pricePerNight || !guest) {
-    return res.status(400).json({ message: "Title, location, pricePerNight and guest are required" });
+  if (!hostId) {
+    return res.status(401).json({ message: "Unauthorized — please log in" });
   }
-  if (pricePerNight <= 0 || guest <= 0) {
+  if (!title || !location || !pricePerNight || !guest || !type) {
+    return res.status(400).json({ message: "title, location, pricePerNight, guest and type are required" });
+  }
+  if (Number(pricePerNight) <= 0 || Number(guest) <= 0) {
     return res.status(400).json({ message: "pricePerNight and guest must be positive" });
   }
 
   try {
+    // Verify the host user exists in the DB
+    const hostExists = await prisma.user.findUnique({ where: { id: hostId } });
+    if (!hostExists) {
+      return res.status(404).json({ message: "Host user not found. Please register an account first." });
+    }
+
+    // Validate type enum
+    const validTypes = ["APARTMENT", "HOUSE", "VILLA", "CABIN"];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ message: `Invalid type. Must be one of: ${validTypes.join(", ")}` });
+    }
+
     const newListing = await prisma.listing.create({
-      data: { title, location, pricePerNight, type, guest, amenities, hostId: 1 },
+      data: {
+        title: String(title),
+        location: String(location),
+        pricePerNight: Number(pricePerNight),
+        guest: Number(guest),
+        type: type as "APARTMENT" | "HOUSE" | "VILLA" | "CABIN",
+        amenities: Array.isArray(amenities) ? amenities : [],
+        description: description ? String(description) : null,
+        hostId: String(hostId),
+      },
     });
+
     clearCache("stats:listings");
     clearCache("listings:all:1:10");
     res.status(201).json(newListing);
-  } catch (error) {
-    res.status(500).json({ message: "Error creating listing" });
+  } catch (error: any) {
+    console.error("createListing error:", error);
+    res.status(500).json({
+      message: "Error creating listing",
+      detail: error?.message ?? String(error),
+    });
   }
 };
 
 export const updateListing = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   try {
     const updated = await prisma.listing.update({ where: { id }, data: req.body });
     clearCache("stats:listings");
     res.json(updated);
   } catch (error) {
+    console.error("updateListing error:", error);
     res.status(500).json({ message: "Error updating listing" });
   }
 };
 
 export const deleteListing = async (req: Request, res: Response) => {
-  const id = parseInt(req.params["id"] as string);
+  const id = req.params["id"] as string;
   try {
     await prisma.listing.delete({ where: { id } });
     clearCache("stats:listings");
     res.json({ message: "Listing deleted successfully" });
   } catch (error) {
+    console.error("deleteListing error:", error);
     res.status(500).json({ message: "Error deleting listing" });
   }
 };

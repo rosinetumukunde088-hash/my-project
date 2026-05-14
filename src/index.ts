@@ -7,6 +7,7 @@ import usersRouter from "./routes/users.routes.js";
 import bookingRouter from "./routes/booking.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import uploadRouter from "./routes/upload.routes.js";
+import listingUploadRouter from "./routes/listingUpload.routes.js";
 import reviewsRouter from "./routes/reviews.routes.js";
 import { connectDB } from "./config/prisma.js";
 import { setupSwagger } from "./config/swagger.js";
@@ -27,6 +28,7 @@ app.use("/users", usersRouter);
 app.use("/bookings", bookingRouter);
 app.use("/auth", authRoutes);
 app.use("/users", uploadRouter);
+app.use("/upload", listingUploadRouter);
 
 setupSwagger(app);
 app.use(errorHandler);
