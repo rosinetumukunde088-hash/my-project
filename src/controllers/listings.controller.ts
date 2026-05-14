@@ -13,7 +13,7 @@ export const getAllListings = async (req: Request, res: Response) => {
   if (cached) return res.json(cached);
 
   const [listings, total] = await Promise.all([
-    prisma.listing.findMany({ skip, take: limit, orderBy: { createdAt: "desc" } }),
+    prisma.listing.findMany({ skip, take: limit, orderBy: { createdAt: "desc" }, include: { photos: true } }),
     prisma.listing.count(),
   ]);
 
@@ -54,7 +54,7 @@ export const getListingById = async (req: Request, res: Response) => {
   // id is a UUID string, not an integer
   const id = req.params["id"] as string;
   try {
-    const listing = await prisma.listing.findUnique({ where: { id } });
+    const listing = await prisma.listing.findUnique({ where: { id }, include: { photos: true } });
     if (!listing) return res.status(404).json({ message: "Listing not found" });
     res.json(listing);
   } catch (error) {

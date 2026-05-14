@@ -3,6 +3,7 @@ import { getAllListings, getListingById, createListing, updateListing, deleteLis
 import { getListingStats } from "../controllers/stats.controller.js";
 import { strictLimiter } from "../middleware/rateLimiter.js";
 import { authenticate } from "../middleware/auth.middleware.js";
+import { addListingPhoto } from "../controllers/upload.controller.js";
 
 const router = express.Router();
 
@@ -195,6 +196,8 @@ router.get("/", getAllListings);
  *       404:
  *         description: Listing not found
  */
+router.get("/:id/photos", (_req, res) => res.json({ photos: [] }));
+router.post("/:id/photos", authenticate, addListingPhoto);
 router.get("/:id", getListingById);
 
 /**

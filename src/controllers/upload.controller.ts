@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import prisma from "../config/prisma.js";
+import { clearCache } from "../config/cache.js";
 
 // POST /users/:id/avatar
 // Uploads a profile picture for a user
@@ -31,4 +32,18 @@ export async function uploadListingPhoto(req: Request, res: Response) {
 
   const { url } = await uploadToCloudinary(req.file.buffer, "airbnb/listings");
   res.json({ url });
+}
+
+export async function addListingPhoto(req: Request, res: Response) {
+  const id = req.params["id"] as string;
+  const { url } = req.body as { url: string };
+
+  if (!url) return res.status(400).json({ error: "url is required" });
+
+  const listing = await prisma.listing.findUnique({ where: { id } });
+  if (!listing) return res.status(404).json({ error: "Listing not found" });
+
+  const photo = await prisma.listingPhoto.create({ data: { url, listingId: id } });
+  clearCache("listings:all:1:10");
+  res.status(201).json(photo);
 }
