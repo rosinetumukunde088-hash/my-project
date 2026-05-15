@@ -3,6 +3,17 @@ import prisma from "../config/prisma.js";
 import { getCache, setCache, clearCache } from "../config/cache.js";
 import type { AuthRequest } from "../middleware/auth.middleware.js";
 
+export const getMyListings = async (req: AuthRequest, res: Response) => {
+  const hostId = req.user?.id;
+  if (!hostId) return res.status(401).json({ message: "Unauthorized" });
+  const listings = await prisma.listing.findMany({
+    where: { hostId },
+    include: { photos: true },
+    orderBy: { createdAt: "desc" },
+  });
+  res.json({ data: listings });
+};
+
 export const getAllListings = async (req: Request, res: Response) => {
   const page = parseInt(req.query["page"] as string) || 1;
   const limit = parseInt(req.query["limit"] as string) || 10;

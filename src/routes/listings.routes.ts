@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllListings, getListingById, createListing, updateListing, deleteListing, searchListings } from "../controllers/listings.controller.js";
+import { getAllListings, getListingById, createListing, updateListing, deleteListing, searchListings, getMyListings } from "../controllers/listings.controller.js";
 import { getListingStats } from "../controllers/stats.controller.js";
 import { strictLimiter } from "../middleware/rateLimiter.js";
 import { authenticate } from "../middleware/auth.middleware.js";
